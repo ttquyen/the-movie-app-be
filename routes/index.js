@@ -1,9 +1,23 @@
 var express = require("express");
 var router = express.Router();
 
-/* GET home page. */
-router.get("/", function (req, res, next) {
-    res.send({ status: "OK", data: "Hello, It's the Movie App" });
-});
+//auth APIs
+const authApi = require("./auth.api");
+router.use("/auth", authApi);
+//user APIs
+const userApi = require("./user.api");
+router.use("/users", userApi);
+//movie APIs
+const movieApi = require("./movie.api");
+router.use("/movies", movieApi);
+//comment APIs
+const commentApi = require("./comment.api");
+router.use("/comments", commentApi);
+//reaction APIs
+const reactionApi = require("./reaction.api");
+router.use("/reactions", reactionApi);
+//genre APIs
+const genreApi = require("./genre.api");
+router.use("/genres", genreApi);
 
 module.exports = router;
