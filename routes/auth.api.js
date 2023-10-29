@@ -3,6 +3,8 @@ const router = express.Router();
 const { body } = require("express-validator");
 const validators = require("../middlewares/validators");
 const authController = require("../controllers/auth.controller");
+const authentication = require("../middlewares/authentication");
+
 /**
  * @route POST /auth/login
  * @description Login with username and password
@@ -31,6 +33,7 @@ router.post(
 
 router.put(
     "/changepassword",
+    authentication.loginRequired,
     validators.validate([
         body("currentPassword", "Invalid Current Password").exists().notEmpty(),
         body("newPassword", "Invalid New Password").exists().notEmpty(),
