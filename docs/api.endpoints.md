@@ -11,6 +11,15 @@
  */
 ```
 
+```javascript
+/**
+ * @route PUT /auth/changepassword
+ * @description Change password
+ * @body {currentPassword, newPassword}
+ * @access Login required
+ */
+```
+
 ### User APIs
 
 ```javascript
@@ -39,21 +48,12 @@
  */
 ```
 
-```javascript
-/**
- * @route PUT /users/changepassword
- * @description Change password
- * @body {email, currentPassword, newPassword}
- * @access Login required
- */
-```
-
 ### Movie APIs
 
 ```javascript
 /**
  * @route GET /movies/:movieType
- * @description Get all movies of a specific type with pagination (Popular, incoming, top rated) allow search by name
+ * @description Get all movies of a specific type with pagination (Popular, upcoming, top rated) allow search by name
  * @access Public
  */
 ```
@@ -74,14 +74,6 @@
  */
 ```
 
-```javascript
-/**
- * @route GET /movies/:id/comments
- * @description Get comments of a post
- * @access Public
- */
-```
-
 ### Comment APIs
 
 ```javascript
@@ -97,7 +89,7 @@
 /**
  * @route GET /comments/:id
  * @description Get detail of a comment
- * @access Login required
+ * @access Public
  */
 ```
 
@@ -105,6 +97,7 @@
 /**
  * @route PUT /comments/:id
  * @description Update a comment
+ * @body {content}
  * @access Login required
  */
 ```
@@ -125,5 +118,15 @@
  * @description Save a reaction to film
  * @body {movieId, emoji: 'like' or 'dislike'}
  * @access Login required
+ */
+```
+
+### Genre APIs
+
+```javascript
+/**
+ * @route GET /genres
+ * @description Get all genres
+ * @access Public
  */
 ```

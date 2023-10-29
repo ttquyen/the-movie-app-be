@@ -25,10 +25,11 @@ Besides that users can add a movie to their favorite list, leave comments, and v
 -   [ ] As a user, I can see a list of comments on a film.
 -   [ ] As a user, I can write comments on a film.
 -   [ ] As a user, I can update my comments.
+-   [ ] As a user, I can delete my comments.
 
 ### Reactions
 
--   [ ] As a user, I can react like or dislike to a post or a comment.
+-   [ ] As a user, I can react like or dislike to a film.
 
 ### Movies
 
