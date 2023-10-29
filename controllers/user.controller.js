@@ -35,22 +35,25 @@ userController.register = catchAsync(async (req, res, next) => {
 });
 userController.getCurrentUser = catchAsync(async (req, res, next) => {
     //Get data from request
-
+    const userId = req.userId;
     // Business Logic Validation
-
-    // Process
-
+    const user = await User.findById(userId);
+    if (!user)
+        throw new AppError(400, "User Not Found", "Get Current User Error");
     //Response
-    sendResponse(res, 200, true, {}, null, " Successful");
+    sendResponse(res, 200, true, user, null, "Get Current User Successful");
 });
 userController.updateProfile = catchAsync(async (req, res, next) => {
     //Get data from request
-
+    const userId = req.userId;
+    const { name } = req.body;
     // Business Logic Validation
-
-    // Process
-
+    let user = await User.findById(userId);
+    if (!user)
+        throw new AppError(400, "User Not Found", "Update User Profile Error");
+    user.name = name;
+    await user.save();
     //Response
-    sendResponse(res, 200, true, {}, null, " Successful");
+    sendResponse(res, 200, true, user, null, "Update User Profile Successful");
 });
 module.exports = userController;
