@@ -52,7 +52,7 @@
 
 ```javascript
 /**
- * @route GET /movies/:movieType
+ * @route GET /movies/lists/:listType
  * @description Get all movies of a specific type with pagination (Popular, upcoming, top rated) allow search by name
  * @access Public
  */

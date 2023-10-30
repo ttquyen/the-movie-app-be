@@ -3,18 +3,18 @@ const router = express.Router();
 const movieController = require("../controllers/movie.controller");
 
 /**
- * @route GET /movies/:movieType?page=1&limit=10
+ * @route GET /movies/lists/:listType?page=1&limit=10
  * @description Get all movies of a specific type with pagination
  * (Popular, upcoming, top rated) allow search by name
  * @access Public
  */
-router.get("/:movieType", movieController.getMovieListByType);
+router.get("/lists/:listType", movieController.getMovieListByType);
 /**
- * @route GET /movies/favorite/:userId?page=1&limit=10
+ * @route GET /movies/favorite?page=1&limit=10
  * @description Get all FAVORITE movies of an user with pagination
  * @access Login required
  */
-router.get("/favorite/:userId", movieController.getFavoriteMovieListOfUser);
+router.get("/favorite", movieController.getFavoriteMovieListOfUser);
 /**
  * @route GET /movies/:id
  * @description Get a single film
