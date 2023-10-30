@@ -3,13 +3,9 @@ const Genre = require("../models/Genre");
 const genreController = {};
 
 genreController.getGenreList = catchAsync(async (req, res, next) => {
-    //Get data from request
-
-    // Business Logic Validation
-
-    // Process
-
+    const genres = await Genre.find();
+    if (!genres) throw new AppError(400, "Genre Not Found", "Get Genre Error");
     //Response
-    sendResponse(res, 200, true, {}, null, " Successful");
+    return sendResponse(res, 200, true, genres, null, "Get Genres Successful");
 });
 module.exports = genreController;
