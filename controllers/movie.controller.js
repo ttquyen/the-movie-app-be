@@ -4,7 +4,7 @@ const movieController = {};
 
 movieController.getMovieListByType = catchAsync(async (req, res, next) => {
     //Get data from request
-    const { movieType } = req.params;
+    const { listType } = req.params;
     let { page, limit, ...filter } = { ...req.query };
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
@@ -14,7 +14,7 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
             title: { $regex: filter.name, $options: "i" },
         });
     }
-    switch (movieType) {
+    switch (listType) {
         case "popular":
             filterConditions.push({
                 popularity: { $gte: 1000 },
@@ -46,20 +46,20 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
         .limit(limit);
     let retMovieList;
     if (movies.length > 0) {
-        const fields = [
-            "_id",
-            "title",
-            "overview",
-            "backdrop_path",
-            "poster_path",
-            "imdb_id",
-            "genre_ids",
-            "vote_count",
-            "vote_average",
-            "popularity",
-            "release_date",
-        ];
-        console.log(movies);
+        // const fields = [
+        //     "_id",
+        //     "title",
+        //     "overview",
+        //     "backdrop_path",
+        //     "poster_path",
+        //     "imdb_id",
+        //     "genre_ids",
+        //     "vote_count",
+        //     "vote_average",
+        //     "popularity",
+        //     "release_date",
+        // ];
+        // console.log(movies);
         retMovieList = movies.map((m) => {
             return {
                 _id: m._id,
@@ -77,8 +77,6 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
         });
     }
 
-    // Process
-    // console.log(filterConditions);
     //Response
     return sendResponse(
         res,
@@ -92,23 +90,84 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
 movieController.getFavoriteMovieListOfUser = catchAsync(
     async (req, res, next) => {
         //Get data from request
-
-        // Business Logic Validation
-
-        // Process
-
-        //Response
-        sendResponse(res, 200, true, {}, null, " Successful");
+        // const userId = req.userId;
+        // let { page, limit, ...filter } = { ...req.query };
+        // page = parseInt(page) || 1;
+        // limit = parseInt(limit) || 10;
+        // const filterConditions = [{ isDeleted: false }];
+        // if (filter.name) {
+        //     filterConditions.push({
+        //         title: { $regex: filter.name, $options: "i" },
+        //     });
+        // }
+        // let filterCriteria = filterConditions.length
+        //     ? { $and: filterConditions }
+        //     : {};
+        // const count = await Movie.countDocuments(filterCriteria);
+        // const totalPages = Math.ceil(count / limit);
+        // const offset = limit * (page - 1);
+        // const movies = await Movie.find(filterCriteria)
+        //     .sort({ createdAt: -1 })
+        //     .skip(offset)
+        //     .limit(limit);
+        // let retMovieList;
+        // if (movies.length > 0) {
+        //     // const fields = [
+        //     //     "_id",
+        //     //     "title",
+        //     //     "overview",
+        //     //     "backdrop_path",
+        //     //     "poster_path",
+        //     //     "imdb_id",
+        //     //     "genre_ids",
+        //     //     "vote_count",
+        //     //     "vote_average",
+        //     //     "popularity",
+        //     //     "release_date",
+        //     // ];
+        //     // console.log(movies);
+        //     retMovieList = movies.map((m) => {
+        //         return {
+        //             _id: m._id,
+        //             title: m.title,
+        //             overview: m.overview,
+        //             backdrop_path: m.backdrop_path,
+        //             poster_path: m.poster_path,
+        //             imdb_id: m.imdb_id,
+        //             genre_ids: m.genre_ids,
+        //             vote_count: m.vote_count,
+        //             vote_average: m.vote_average,
+        //             popularity: m.popularity,
+        //             release_date: m.release_date,
+        //         };
+        //     });
+        // }
+        // //Response
+        // return sendResponse(
+        //     res,
+        //     200,
+        //     true,
+        //     { movies: retMovieList, totalPages, count },
+        //     null,
+        //     "Get Movies By Type Successful"
+        // );
     }
 );
 movieController.getSingleMovie = catchAsync(async (req, res, next) => {
     //Get data from request
+    const { id: movieId } = req.params;
 
-    // Business Logic Validation
-
-    // Process
-
+    const movie = await Movie.findOne({ _id: movieId, isDeleted: false });
+    if (!movie)
+        throw new AppError(400, "Movie Not Found", "Get Single Movie Error");
     //Response
-    sendResponse(res, 200, true, {}, null, " Successful");
+    return sendResponse(
+        res,
+        200,
+        true,
+        movie,
+        null,
+        "Get Single Movie Successful"
+    );
 });
 module.exports = movieController;
