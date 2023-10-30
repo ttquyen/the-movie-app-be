@@ -5,6 +5,7 @@ const movieSchema = Schema(
     {
         title: { type: String, required: true },
         original_title: { type: String, required: true },
+        overview: { type: String, required: true },
         belongs_to_collection: { type: Array, required: false, default: null },
 
         backdrop_path: { type: String, required: false, default: "" },
