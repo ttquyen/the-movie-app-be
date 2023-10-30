@@ -1,5 +1,6 @@
 const { AppError, catchAsync, sendResponse } = require("../helpers/utils");
 const Movie = require("../models/Movie");
+const Reaction = require("../models/Reaction");
 const movieController = {};
 
 movieController.getMovieListByType = catchAsync(async (req, res, next) => {
@@ -9,9 +10,9 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
     const filterConditions = [{ isDeleted: false }];
-    if (filter.name) {
+    if (filter.title) {
         filterConditions.push({
-            title: { $regex: filter.name, $options: "i" },
+            title: { $regex: filter.title, $options: "i" },
         });
     }
     switch (listType) {
@@ -46,20 +47,6 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
         .limit(limit);
     let retMovieList;
     if (movies.length > 0) {
-        // const fields = [
-        //     "_id",
-        //     "title",
-        //     "overview",
-        //     "backdrop_path",
-        //     "poster_path",
-        //     "imdb_id",
-        //     "genre_ids",
-        //     "vote_count",
-        //     "vote_average",
-        //     "popularity",
-        //     "release_date",
-        // ];
-        // console.log(movies);
         retMovieList = movies.map((m) => {
             return {
                 _id: m._id,
@@ -89,68 +76,72 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
 });
 movieController.getFavoriteMovieListOfUser = catchAsync(
     async (req, res, next) => {
-        //Get data from request
-        // const userId = req.userId;
-        // let { page, limit, ...filter } = { ...req.query };
-        // page = parseInt(page) || 1;
-        // limit = parseInt(limit) || 10;
-        // const filterConditions = [{ isDeleted: false }];
-        // if (filter.name) {
-        //     filterConditions.push({
-        //         title: { $regex: filter.name, $options: "i" },
-        //     });
-        // }
-        // let filterCriteria = filterConditions.length
-        //     ? { $and: filterConditions }
-        //     : {};
-        // const count = await Movie.countDocuments(filterCriteria);
-        // const totalPages = Math.ceil(count / limit);
-        // const offset = limit * (page - 1);
-        // const movies = await Movie.find(filterCriteria)
-        //     .sort({ createdAt: -1 })
-        //     .skip(offset)
-        //     .limit(limit);
-        // let retMovieList;
-        // if (movies.length > 0) {
-        //     // const fields = [
-        //     //     "_id",
-        //     //     "title",
-        //     //     "overview",
-        //     //     "backdrop_path",
-        //     //     "poster_path",
-        //     //     "imdb_id",
-        //     //     "genre_ids",
-        //     //     "vote_count",
-        //     //     "vote_average",
-        //     //     "popularity",
-        //     //     "release_date",
-        //     // ];
-        //     // console.log(movies);
-        //     retMovieList = movies.map((m) => {
-        //         return {
-        //             _id: m._id,
-        //             title: m.title,
-        //             overview: m.overview,
-        //             backdrop_path: m.backdrop_path,
-        //             poster_path: m.poster_path,
-        //             imdb_id: m.imdb_id,
-        //             genre_ids: m.genre_ids,
-        //             vote_count: m.vote_count,
-        //             vote_average: m.vote_average,
-        //             popularity: m.popularity,
-        //             release_date: m.release_date,
-        //         };
-        //     });
-        // }
-        // //Response
-        // return sendResponse(
-        //     res,
-        //     200,
-        //     true,
-        //     { movies: retMovieList, totalPages, count },
-        //     null,
-        //     "Get Movies By Type Successful"
-        // );
+        // Get data from request
+        const userId = req.userId;
+        let { page, limit, ...filter } = { ...req.query };
+        page = parseInt(page) || 1;
+        limit = parseInt(limit) || 10;
+        let movieIds = await Reaction.find(
+            { emoji: "like", author: userId },
+            "movieId"
+        );
+        if (!movieIds) {
+            return sendResponse(
+                res,
+                200,
+                true,
+                { movies: [], totalPages: 0, count: 0 },
+                null,
+                "Get Favorite Movies Successful"
+            );
+        }
+        movieIds = movieIds.map((i) => i.movieId);
+        const filterConditions = [
+            { isDeleted: false },
+            { _id: { $in: movieIds } },
+        ];
+        if (filter.title) {
+            filterConditions.push({
+                title: { $regex: filter.title, $options: "i" },
+            });
+        }
+        let filterCriteria = filterConditions.length
+            ? { $and: filterConditions }
+            : {};
+        const count = await Movie.countDocuments(filterCriteria);
+        const totalPages = Math.ceil(count / limit);
+        const offset = limit * (page - 1);
+        const movies = await Movie.find(filterCriteria)
+            .sort({ createdAt: -1 })
+            .skip(offset)
+            .limit(limit);
+        let retMovieList = [];
+        if (movies.length > 0) {
+            retMovieList = movies.map((m) => {
+                return {
+                    _id: m._id,
+                    title: m.title,
+                    overview: m.overview,
+                    backdrop_path: m.backdrop_path,
+                    poster_path: m.poster_path,
+                    imdb_id: m.imdb_id,
+                    genre_ids: m.genre_ids,
+                    vote_count: m.vote_count,
+                    vote_average: m.vote_average,
+                    popularity: m.popularity,
+                    release_date: m.release_date,
+                };
+            });
+        }
+        //Response
+        return sendResponse(
+            res,
+            200,
+            true,
+            { movies: retMovieList, totalPages, count },
+            null,
+            "Get Favorite Movies Successful"
+        );
     }
 );
 movieController.getSingleMovie = catchAsync(async (req, res, next) => {

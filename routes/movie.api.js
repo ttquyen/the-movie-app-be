@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const authentication = require("../middlewares/authentication");
 const movieController = require("../controllers/movie.controller");
 
 /**
@@ -14,7 +15,11 @@ router.get("/lists/:listType", movieController.getMovieListByType);
  * @description Get all FAVORITE movies of an user with pagination
  * @access Login required
  */
-router.get("/favorite", movieController.getFavoriteMovieListOfUser);
+router.get(
+    "/favorite",
+    authentication.loginRequired,
+    movieController.getFavoriteMovieListOfUser
+);
 /**
  * @route GET /movies/:id
  * @description Get a single film
