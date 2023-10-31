@@ -16,9 +16,9 @@ router.get("/lists/:listType", movieController.getMovieListByType);
  * @access Login required
  */
 router.get(
-    "/favorite",
-    authentication.loginRequired,
-    movieController.getFavoriteMovieListOfUser
+  "/favorite",
+  authentication.loginRequired,
+  movieController.getFavoriteMovieListOfUser
 );
 /**
  * @route GET /movies/:id
@@ -26,4 +26,10 @@ router.get(
  * @access Public
  */
 router.get("/:id", movieController.getSingleMovie);
+/**
+ * @route GET /movies/:id/comments
+ * @description Get all comments of a film
+ * @access Public
+ */
+router.get("/comments/:id", movieController.getCommentsOfMovie);
 module.exports = router;

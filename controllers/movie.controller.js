@@ -1,6 +1,8 @@
 const { AppError, catchAsync, sendResponse } = require("../helpers/utils");
 const Movie = require("../models/Movie");
 const Reaction = require("../models/Reaction");
+const Comment = require("../models/Comment");
+const Genre = require("../models/Genre");
 const movieController = {};
 
 movieController.getMovieListByType = catchAsync(async (req, res, next) => {
@@ -28,7 +30,7 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
             break;
         case "upcoming":
             filterConditions.push({
-                release_date: { $gt: "2023-10-01", $lte: "2023-12-30" },
+                release_date: { $gt: "2023-08-01", $lte: "2023-12-30" },
             });
             break;
         default:
@@ -45,7 +47,7 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit);
-    let retMovieList;
+    let retMovieList = [];
     if (movies.length > 0) {
         retMovieList = movies.map((m) => {
             return {
@@ -151,14 +153,55 @@ movieController.getSingleMovie = catchAsync(async (req, res, next) => {
     const movie = await Movie.findOne({ _id: movieId, isDeleted: false });
     if (!movie)
         throw new AppError(400, "Movie Not Found", "Get Single Movie Error");
+    const genre_ids = movie.genre_ids;
+    let genres = await Genre.find({ id: { $in: genre_ids } });
     //Response
     return sendResponse(
         res,
         200,
         true,
-        movie,
+        { ...movie._doc, genres },
         null,
         "Get Single Movie Successful"
+    );
+});
+movieController.getCommentsOfMovie = catchAsync(async (req, res, next) => {
+    //Get data from request
+    const movieId = req.params.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    // Validate movie exist
+    let movie = await Movie.findOne({ _id: movieId, isDeleted: false });
+    if (!movie)
+        throw new AppError(
+            401,
+            "Movie not found",
+            "Get Comments of Movie Error"
+        );
+
+    // Process
+    //get comments
+    const count = await Comment.countDocuments({
+        movie: movieId,
+        isDeleted: false,
+    });
+    const totalPages = Math.ceil(count / limit);
+    const offset = limit * (page - 1);
+
+    const comments = await Comment.find({ movie: movieId, isDeleted: false })
+        .sort({ createdAt: -1 })
+        .skip(offset)
+        .limit(limit)
+        .populate("author");
+
+    //Response
+    return sendResponse(
+        res,
+        200,
+        true,
+        { comments, totalPages, count },
+        null,
+        "Get Comments of Movie Successful"
     );
 });
 module.exports = movieController;
