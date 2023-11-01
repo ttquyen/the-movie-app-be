@@ -7,8 +7,8 @@ const movieController = {};
 
 movieController.getMovieListByType = catchAsync(async (req, res, next) => {
     //Get data from request
-    const { listType } = req.params;
-    let { page, limit, ...filter } = { ...req.query };
+    //   const listType = req.body.listType;
+    let { page, limit, listType, ...filter } = { ...req.query };
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
     const filterConditions = [{ isDeleted: false }];
@@ -17,24 +17,26 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
             title: { $regex: filter.title, $options: "i" },
         });
     }
-    switch (listType) {
-        case "popular":
-            filterConditions.push({
-                popularity: { $gte: 1000 },
-            });
-            break;
-        case "top_rated":
-            filterConditions.push({
-                vote_average: { $gte: 7 },
-            });
-            break;
-        case "upcoming":
-            filterConditions.push({
-                release_date: { $gt: "2023-08-01", $lte: "2023-12-30" },
-            });
-            break;
-        default:
-            break;
+    if (listType) {
+        switch (listType) {
+            case "popular":
+                filterConditions.push({
+                    popularity: { $gte: 1000 },
+                });
+                break;
+            case "top_rated":
+                filterConditions.push({
+                    vote_average: { $gte: 7 },
+                });
+                break;
+            case "upcoming":
+                filterConditions.push({
+                    release_date: { $gt: "2020-01-01", $lte: "2023-12-30" },
+                });
+                break;
+            default:
+                break;
+        }
     }
     let filterCriteria = filterConditions.length
         ? { $and: filterConditions }

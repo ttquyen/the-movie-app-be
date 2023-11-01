@@ -9,23 +9,23 @@ const movieController = require("../controllers/movie.controller");
  * (Popular, upcoming, top rated) allow search by name
  * @access Public
  */
-router.get("/lists/:listType", movieController.getMovieListByType);
+router.get("/lists", movieController.getMovieListByType);
 /**
  * @route GET /movies/favorite?page=1&limit=10
  * @description Get all FAVORITE movies of an user with pagination
  * @access Login required
  */
 router.get(
-  "/favorite",
-  authentication.loginRequired,
-  movieController.getFavoriteMovieListOfUser
+    "/favorite",
+    authentication.loginRequired,
+    movieController.getFavoriteMovieListOfUser
 );
 /**
  * @route GET /movies/:id
  * @description Get a single film
  * @access Public
  */
-router.get("/:id", movieController.getSingleMovie);
+router.get("/detail/:id", movieController.getSingleMovie);
 /**
  * @route GET /movies/:id/comments
  * @description Get all comments of a film
