@@ -1,18 +1,14 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const reactionSchema = Schema(
+const ratingSchema = Schema(
     {
         author: { type: Schema.ObjectId, required: true, ref: "User" },
         movieId: { type: Schema.ObjectId, required: true, ref: "Movie" },
-        emoji: {
-            type: String,
-            required: true,
-            enum: ["like", "dislike"],
-        },
+        star: { type: Number, required: true },
     },
     { timestamps: true }
 );
 
-const Reaction = mongoose.model("Reaction", reactionSchema);
-module.exports = Reaction;
+const Rating = mongoose.model("Rating", ratingSchema);
+module.exports = Rating;

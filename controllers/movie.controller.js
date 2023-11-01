@@ -1,8 +1,8 @@
 const { AppError, catchAsync, sendResponse } = require("../helpers/utils");
 const Movie = require("../models/Movie");
-const Reaction = require("../models/Reaction");
 const Comment = require("../models/Comment");
 const Genre = require("../models/Genre");
+const Rating = require("../models/Rating");
 const movieController = {};
 
 movieController.getMovieListByType = catchAsync(async (req, res, next) => {
@@ -83,8 +83,8 @@ movieController.getFavoriteMovieListOfUser = catchAsync(
         let { page, limit, ...filter } = { ...req.query };
         page = parseInt(page) || 1;
         limit = parseInt(limit) || 10;
-        let movieIds = await Reaction.find(
-            { emoji: "like", author: userId },
+        let movieIds = await Rating.find(
+            { author: userId, star: { $gte: 3 } },
             "movieId"
         );
         if (!movieIds) {
@@ -149,18 +149,25 @@ movieController.getFavoriteMovieListOfUser = catchAsync(
 movieController.getSingleMovie = catchAsync(async (req, res, next) => {
     //Get data from request
     const { id: movieId } = req.params;
+    const userId = req.query.userId;
 
     const movie = await Movie.findOne({ _id: movieId, isDeleted: false });
     if (!movie)
         throw new AppError(400, "Movie Not Found", "Get Single Movie Error");
     const genre_ids = movie.genre_ids;
     let genres = await Genre.find({ id: { $in: genre_ids } });
+    let alreadyRated = await Rating.findOne({
+        movieId: movieId,
+        author: userId,
+    });
+    let user_rated = alreadyRated ? alreadyRated.star : null;
+
     //Response
     return sendResponse(
         res,
         200,
         true,
-        { ...movie._doc, genres },
+        { ...movie._doc, genres, user_rated },
         null,
         "Get Single Movie Successful"
     );

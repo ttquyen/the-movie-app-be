@@ -13,9 +13,9 @@ router.use("/movies", movieApi);
 //comment APIs
 const commentApi = require("./comment.api");
 router.use("/comments", commentApi);
-//reaction APIs
-const reactionApi = require("./reaction.api");
-router.use("/reactions", reactionApi);
+//rating APIs
+const ratingApi = require("./rating.api");
+router.use("/ratings", ratingApi);
 //genre APIs
 const genreApi = require("./genre.api");
 router.use("/genres", genreApi);

@@ -25,13 +25,10 @@ const movieSchema = Schema(
         production_countries: { type: Array, required: false, default: [] },
         production_companies: { type: Array, required: false, default: [] },
         status: { type: String, required: false, default: "" },
-        reactions: {
-            like: { type: Number, default: 0 },
-            dislike: { type: Number, default: 0 },
-        },
         commentCount: { type: Number, default: 0 },
+        user_rated: { type: Number, required: false, default: null },
 
-        isDeleted: { type: Boolean, default: false, select: false },
+        isDeleted: { type: Boolean, required: false, default: false },
     },
     { timestamps: true }
 );

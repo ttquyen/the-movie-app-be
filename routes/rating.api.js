@@ -3,11 +3,11 @@ const router = express.Router();
 const authentication = require("../middlewares/authentication");
 const { body } = require("express-validator");
 const validators = require("../middlewares/validators");
-const reactionController = require("../controllers/reaction.controller");
+const ratingController = require("../controllers/rating.controller");
 
 /**
- * @route POST /reactions
- * @description Save a reaction to film
+ * @route POST /ratings
+ * @description Save a rating to film
  * @body {movieId, emoji: 'like' or 'dislike'}
  * @access Login required
  */
@@ -18,8 +18,8 @@ router.post(
         body("movieId", "Invalid movieId")
             .exists()
             .custom(validators.checkObjectId),
-        body("emoji", "Invalid Emoji").exists().isIn(["like", "dislike"]),
+        body("star", "Invalid Star").exists().isNumeric(),
     ]),
-    reactionController.setReaction
+    ratingController.setRating
 );
 module.exports = router;
