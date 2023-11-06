@@ -30,11 +30,7 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
                     vote_average: { $gte: 7 },
                 });
                 break;
-            case "upcoming":
-                filterConditions.push({
-                    release_date: { $gt: "2020-01-01", $lte: "2023-12-30" },
-                });
-                break;
+
             default:
                 break;
         }
@@ -47,7 +43,7 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
     const offset = limit * (page - 1);
 
     const movies = await Movie.find(filterCriteria)
-        .sort({ createdAt: -1 })
+        // .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit);
     let retMovieList = [];
@@ -121,8 +117,6 @@ movieController.getRatedMovieListOfUser = catchAsync(async (req, res, next) => {
     let retMovieList = [];
     if (movies.length > 0) {
         retMovieList = movies.map((m) => {
-            console.log(ratedMovies[1].movieId);
-            console.log(m._id);
             let user_rated = ratedMovies.find((movie) =>
                 movie.movieId.equals(m._id)
             ).star;
