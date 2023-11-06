@@ -3,6 +3,7 @@ const Movie = require("../models/Movie");
 const Comment = require("../models/Comment");
 const Genre = require("../models/Genre");
 const Rating = require("../models/Rating");
+const Favorite = require("../models/Favorite");
 const movieController = {};
 
 movieController.getMovieListByType = catchAsync(async (req, res, next) => {
@@ -78,6 +79,79 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
         "Get Movies By Type Successful"
     );
 });
+movieController.getRatedMovieListOfUser = catchAsync(async (req, res, next) => {
+    // Get data from request
+    const userId = req.userId;
+    let { page, limit, ...filter } = { ...req.query };
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 10;
+
+    let ratedMovies = await Rating.find(
+        { author: userId, isDeleted: false },
+        "movieId star"
+    );
+    if (!ratedMovies) {
+        return sendResponse(
+            res,
+            200,
+            true,
+            { movies: [], totalPages: 0, count: 0 },
+            null,
+            "Get Rated Movies Successful"
+        );
+    }
+    let movieIds = ratedMovies.map((i) => i.movieId);
+    const filterConditions = [{ isDeleted: false }, { _id: { $in: movieIds } }];
+    if (filter.title) {
+        filterConditions.push({
+            title: { $regex: filter.title, $options: "i" },
+        });
+    }
+
+    let filterCriteria = filterConditions.length
+        ? { $and: filterConditions }
+        : {};
+    const count = await Movie.countDocuments(filterCriteria);
+    const totalPages = Math.ceil(count / limit);
+    const offset = limit * (page - 1);
+    const movies = await Movie.find(filterCriteria)
+        // .sort(sortFilter)
+        .skip(offset)
+        .limit(limit);
+    let retMovieList = [];
+    if (movies.length > 0) {
+        retMovieList = movies.map((m) => {
+            console.log(ratedMovies[1].movieId);
+            console.log(m._id);
+            let user_rated = ratedMovies.find((movie) =>
+                movie.movieId.equals(m._id)
+            ).star;
+            return {
+                _id: m._id,
+                title: m.title,
+                overview: m.overview,
+                backdrop_path: m.backdrop_path,
+                poster_path: m.poster_path,
+                imdb_id: m.imdb_id,
+                genre_ids: m.genre_ids,
+                vote_count: m.vote_count,
+                vote_average: m.vote_average,
+                popularity: m.popularity,
+                release_date: m.release_date,
+                user_rated: user_rated,
+            };
+        });
+    }
+    //Response
+    return sendResponse(
+        res,
+        200,
+        true,
+        { movies: retMovieList, totalPages, count },
+        null,
+        "Get Favorite Movies Successful"
+    );
+});
 movieController.getFavoriteMovieListOfUser = catchAsync(
     async (req, res, next) => {
         // Get data from request
@@ -85,21 +159,21 @@ movieController.getFavoriteMovieListOfUser = catchAsync(
         let { page, limit, ...filter } = { ...req.query };
         page = parseInt(page) || 1;
         limit = parseInt(limit) || 10;
-        let movieIds = await Rating.find(
-            { author: userId, star: { $gte: 3 } },
-            "movieId"
-        );
-        if (!movieIds) {
+
+        let favMovies = await Favorite.find({ author: userId }, "movieId");
+        if (!favMovies) {
             return sendResponse(
                 res,
                 200,
                 true,
                 { movies: [], totalPages: 0, count: 0 },
                 null,
-                "Get Favorite Movies Successful"
+                "Get Rated Movies Successful"
             );
         }
-        movieIds = movieIds.map((i) => i.movieId);
+        let movieIds = favMovies.map((i) => i.movieId);
+        console.log("fav--", favMovies);
+        console.log("movId---", movieIds);
         const filterConditions = [
             { isDeleted: false },
             { _id: { $in: movieIds } },
@@ -109,6 +183,7 @@ movieController.getFavoriteMovieListOfUser = catchAsync(
                 title: { $regex: filter.title, $options: "i" },
             });
         }
+
         let filterCriteria = filterConditions.length
             ? { $and: filterConditions }
             : {};
@@ -134,6 +209,7 @@ movieController.getFavoriteMovieListOfUser = catchAsync(
                     vote_average: m.vote_average,
                     popularity: m.popularity,
                     release_date: m.release_date,
+                    isFavorite: true,
                 };
             });
         }
@@ -164,12 +240,18 @@ movieController.getSingleMovie = catchAsync(async (req, res, next) => {
     });
     let user_rated = alreadyRated ? alreadyRated.star : null;
 
+    let alreadyAddedFavorite = await Favorite.findOne({
+        movieId: movieId,
+        author: userId,
+    });
+    let isFavorite = alreadyAddedFavorite ? true : false;
+
     //Response
     return sendResponse(
         res,
         200,
         true,
-        { ...movie._doc, genres, user_rated },
+        { ...movie._doc, genres, user_rated, isFavorite },
         null,
         "Get Single Movie Successful"
     );
@@ -213,4 +295,33 @@ movieController.getCommentsOfMovie = catchAsync(async (req, res, next) => {
         "Get Comments of Movie Successful"
     );
 });
+movieController.removeMovieFromFavoriteList = catchAsync(
+    async (req, res, next) => {
+        //Get data from request
+        const ratingId = req.params.id;
+        // const userId = req.userId;
+        // Validate movie exist
+        let rating = await Rating.findOneAndUpdate(
+            { _id: ratingId, isDeleted: false },
+            { isDeleted: true }
+        );
+        if (!rating)
+            throw new AppError(
+                401,
+                "Rating not found",
+                "Remove Movie From Favorite List Error"
+            );
+
+        //Response
+        return sendResponse(
+            res,
+            200,
+            true,
+            rating,
+            null,
+            "Remove Movie From Favorite List Successful"
+        );
+    }
+);
+
 module.exports = movieController;

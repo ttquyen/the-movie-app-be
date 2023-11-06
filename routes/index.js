@@ -19,5 +19,8 @@ router.use("/ratings", ratingApi);
 //genre APIs
 const genreApi = require("./genre.api");
 router.use("/genres", genreApi);
+//favorite APIs
+const favoriteApi = require("./favorite.api");
+router.use("/favorites", favoriteApi);
 
 module.exports = router;
