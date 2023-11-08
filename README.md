@@ -4,7 +4,7 @@ Welcome to our movie application, where we dive deep into the world of cinema an
 
 The Movie App is a website project, where we will build the API list and database based on The Movie Database.
 
-Users can see the list of popular, incoming, and top-rated films all over the world. They also can find their exciting films by searching and filtering their favorite genres.
+Users can see the list of popular, now-playing, and top-rated films all over the world. They also can find their exciting films by searching and filtering their favorite genres.
 
 Besides that users can add a movie to their favorite list, leave comments, and vote for films after enjoying them.
 
@@ -12,31 +12,37 @@ Besides that users can add a movie to their favorite list, leave comments, and v
 
 ### Authentication
 
--   [ ] As a user, I can register for a new account with name, email and password.
--   [ ] As a user, I can sign in with my email and password.
+-   [x] As a user, I can register for a new account with name, email and password.
+-   [x] As a user, I can sign in with my email and password.
 
 ### Users
 
--   [ ] As a user, I can get my current profile info (stay signed in with refreshing page).
--   [ ] As a user, I can update my profile info like Name or change password
+-   [x] As a user, I can get my current profile info (stay signed in with refreshing page).
+-   [x] As a user, I can update my profile info (name)
 
 ### Comments
 
--   [ ] As a user, I can see a list of comments on a film.
--   [ ] As a user, I can write comments on a film.
--   [ ] As a user, I can update my comments.
--   [ ] As a user, I can delete my comments.
+-   [x] As a user, I can see a list of comments on a film.
+-   [x] As a user, I can write comments on a film.
+-   [x] As a user, I can update my comments.
+-   [x] As a user, I can delete my comments.
 
-### Reactions
+### Rating
 
--   [ ] As a user, I can react like or dislike to a film.
+-   [x] As a user, I can rate to a film (up to 10 stars).
+-   [x] As a user, I can see a list of my rated movies.
+
+### Favorite
+
+-   [x] As a user, I can add a film to my favorite movie list.
+-   [x] As a user, I can see a list of my favorite movies.
 
 ### Movies
 
--   [ ] As a user, I can see a list of popular, incoming, and top-rated films.
--   [ ] As a user, I can search a film by name and filter them by genre.
--   [ ] As a user, I can see my favorite films.
--   [ ] As a user, I can see the film detail.
+-   [x] As a user, I can see a list of popular, now-playing, and top-rated films.
+-   [x] As a user, I can search a film by name and filter them by genre.
+-   [x] As a user, I can see the film detail.
+-   [x] As a user, I can see the official trailer of a film.
 
 ## Endpoint APIs
 

@@ -8,7 +8,7 @@ const ratingController = require("../controllers/rating.controller");
 /**
  * @route POST /ratings
  * @description Save a rating to film
- * @body {movieId, emoji: 'like' or 'dislike'}
+ * @body {movieId, star}
  * @access Login required
  */
 router.post(

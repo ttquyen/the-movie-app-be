@@ -11,15 +11,6 @@
  */
 ```
 
-```javascript
-/**
- * @route PUT /auth/changepassword
- * @description Change password
- * @body {currentPassword, newPassword}
- * @access Login required
- */
-```
-
 ### User APIs
 
 ```javascript
@@ -52,15 +43,24 @@
 
 ```javascript
 /**
- * @route GET /movies/lists/:listType
- * @description Get all movies of a specific type with pagination (Popular, upcoming, top rated) allow search by name
+ * @route GET /movies/lists/:listType?page=1&limit=10
+ * @description Get all movies of a specific type with pagination
+ * (Popular, upcoming, top rated) allow search by name
  * @access Public
  */
 ```
 
 ```javascript
 /**
- * @route GET /movies/favorite/:userId?page=1&limit=10
+ * @route GET /movies/reated?page=1&limit=10
+ * @description Get all FAVORITE movies of an user with pagination
+ * @access Login required
+ */
+```
+
+```javascript
+/**
+ * @route GET /movies/favorite?page=1&limit=10
  * @description Get all FAVORITE movies of an user with pagination
  * @access Login required
  */
@@ -70,6 +70,14 @@
 /**
  * @route GET /movies/:id
  * @description Get a single film
+ * @access Public
+ */
+```
+
+```javascript
+/**
+ * @route GET /movies/:id/comments
+ * @description Get all comments of a film
  * @access Public
  */
 ```
@@ -110,13 +118,33 @@
  */
 ```
 
-### Reaction APIs
+### Rating APIs
 
 ```javascript
 /**
- * @route POST /reactions
- * @description Save a reaction to film
- * @body {movieId, emoji: 'like' or 'dislike'}
+ * @route POST /ratings
+ * @description Save a rating to film
+ * @body {movieId, star}
+ * @access Login required
+ */
+```
+
+### Favorite APIs
+
+```javascript
+/**
+ * @route POST /favorites
+ * @description Save a favorite film
+ * @body {movieId}
+ * @access Login required
+ */
+```
+
+```javascript
+/**
+ * @route DELETE /favorites/:id
+ * @description Remove a favorite film
+ * @body {movieId}
  * @access Login required
  */
 ```
