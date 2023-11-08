@@ -18,7 +18,10 @@ router.post(
             .exists()
             .isEmail()
             .normalizeEmail({ gmail_remove_dots: false }),
-        body("password", "Invalid Password").exists().notEmpty(),
+        body("password", "Invalid Password")
+            .exists()
+            .notEmpty()
+            .isLength({ min: 6 }),
     ]),
     userController.register
 );
