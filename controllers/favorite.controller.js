@@ -83,11 +83,11 @@ favoriteController.getFavoriteMovies = catchAsync(async (req, res, next) => {
     //Response
     return sendResponse(
         res,
-        201,
+        200,
         true,
         favorite,
         null,
-        "Add Favorite Successful"
+        "Get Favorite Successful"
     );
 });
 favoriteController.removeFavoriteMovie = catchAsync(async (req, res, next) => {
@@ -113,7 +113,7 @@ favoriteController.removeFavoriteMovie = catchAsync(async (req, res, next) => {
     //Response
     return sendResponse(
         res,
-        201,
+        200,
         true,
         favorite,
         null,

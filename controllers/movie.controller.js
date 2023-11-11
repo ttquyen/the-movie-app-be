@@ -18,6 +18,11 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
             title: { $regex: filter.title, $options: "i" },
         });
     }
+    if (filter.genreId) {
+        filterConditions.push({
+            genre_ids: { $eq: parseInt(filter.genreId) },
+        });
+    }
     if (listType) {
         switch (listType) {
             case "popular":
