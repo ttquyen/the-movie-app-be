@@ -45,4 +45,14 @@ router.put(
     userController.updateProfile
 );
 
+router.get(
+    "/verify/:id/:token",
+    validators.validate([
+        param("id", "Invalid UserID")
+            .exists()
+            .isString()
+            .custom(validators.checkObjectId),
+    ]),
+    userController.verifyEmail
+);
 module.exports = router;

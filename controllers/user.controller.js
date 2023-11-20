@@ -1,7 +1,9 @@
 const { AppError, catchAsync, sendResponse } = require("../helpers/utils");
 const User = require("../models/User");
+const Token = require("../models/Token");
 const bcrypt = require("bcryptjs");
-
+const sendEmail = require("../helpers/email");
+const crypto = require("crypto");
 const userController = {};
 
 userController.register = catchAsync(async (req, res, next) => {
@@ -23,6 +25,14 @@ userController.register = catchAsync(async (req, res, next) => {
     user = await User.create({ name, email, password });
 
     const accessToken = await user.generateToken();
+
+    let token = await new Token({
+        userId: user._id,
+        token: crypto.randomBytes(32).toString("hex"),
+    }).save();
+
+    await sendEmail(user, token, "Verify Email");
+
     //Response
     sendResponse(
         res,
@@ -30,7 +40,7 @@ userController.register = catchAsync(async (req, res, next) => {
         true,
         { user, accessToken },
         null,
-        "Create User Successful"
+        "An Email sent to your account please verify"
     );
 });
 userController.getCurrentUser = catchAsync(async (req, res, next) => {
@@ -56,4 +66,26 @@ userController.updateProfile = catchAsync(async (req, res, next) => {
     //Response
     sendResponse(res, 200, true, user, null, "Update User Profile Successful");
 });
+userController.verifyEmail = catchAsync(async (req, res, next) => {
+    let { id: userID, token: verifyToken } = req.params;
+    const token = await Token.findOne({
+        userId: userID,
+        token: verifyToken,
+    });
+    if (!token)
+        throw new AppError(400, "Can not find Token", "Verify Email Error");
+    let user = await User.findByIdAndUpdate(
+        userID,
+        { verified: true },
+        { new: true }
+    );
+    if (!user)
+        throw new AppError(400, "Can not find user", "Verify Email Error");
+
+    await Token.findByIdAndRemove(token._id);
+
+    //Response
+    sendResponse(res, 200, true, user, null, "Email Verified Successful");
+});
+
 module.exports = userController;
