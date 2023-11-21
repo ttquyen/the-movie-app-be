@@ -23,5 +23,20 @@ router.post(
     ]),
     authController.loginWithEmail
 );
+/**
+ * @route PUT /auth/changepassword
+ * @description Change password
+ * @body {currentPassword, newPassword}
+ * @access Login required
+ */
 
+router.put(
+    "/changepassword",
+    authentication.loginRequired,
+    validators.validate([
+        body("currentPassword", "Invalid Current Password").exists().notEmpty(),
+        body("newPassword", "Invalid New Password").exists().notEmpty(),
+    ]),
+    authController.changePassword
+);
 module.exports = router;

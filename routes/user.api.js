@@ -53,6 +53,6 @@ router.get(
             .isString()
             .custom(validators.checkObjectId),
     ]),
-    userController.verifyEmail
+    userController.verifyAccount
 );
 module.exports = router;
