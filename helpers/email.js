@@ -62,7 +62,7 @@ const sendEmail = async (user, token) => {
         } else if (token.type === "change-password") {
             await transporter.sendMail(changePasswordMailOptions);
         } else if (token.type === "forgot-password") {
-            await transporter.sendMail(changePasswordMailOptions);
+            await transporter.sendMail(forgotPasswordMailOptions);
         }
         console.log("email sent sucessfully");
     } catch (error) {

@@ -44,7 +44,11 @@ router.put(
     validators.validate([body("name", "Invalid name").exists().isString()]),
     userController.updateProfile
 );
-
+/**
+ * @route GET /verify/:id/:token
+ * @description Verify a account with token
+ * @access Public
+ */
 router.get(
     "/verify/:id/:token",
     validators.validate([

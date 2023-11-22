@@ -65,7 +65,6 @@ userController.updateProfile = catchAsync(async (req, res, next) => {
 });
 userController.verifyAccount = catchAsync(async (req, res, next) => {
     let { id: userID, token: verifyToken } = req.params;
-    console.log(userID, verifyToken);
     const token = await Token.findOne({
         userId: userID,
         token: verifyToken,
@@ -86,14 +85,7 @@ userController.verifyAccount = catchAsync(async (req, res, next) => {
     await token.delete();
 
     //Response
-    return sendResponse(
-        res,
-        200,
-        true,
-        token,
-        null,
-        "Email Verified Successful"
-    );
+    return sendResponse(res, 200, true, {}, null, "Email Verified Successful");
 });
 
 module.exports = userController;

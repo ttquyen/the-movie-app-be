@@ -43,7 +43,8 @@ authController.changePassword = catchAsync(async (req, res, next) => {
     let { currentPassword, newPassword, token: inputToken } = req.body;
     const user = await User.findById(userId, "+password");
     if (!user)
-        throw new AppError(400, "Invalid Credentials", "Change Password Error");
+        throw new AppError(400, "User Not Found", "Change Password Error");
+    //check token, if not, generate and send by email, return
     if (!inputToken) {
         let token = await new Token({
             userId: userId,
@@ -58,22 +59,17 @@ authController.changePassword = catchAsync(async (req, res, next) => {
             true,
             {},
             null,
-            "An Email sent to your account please verify"
+            "Please check your mailbox to get a token "
         );
     }
 
-    const token = await Token.findOne({
+    const token = await Token.findOneAndRemove({
         userId: userId,
         token: inputToken,
         type: "change-password",
     });
     if (!token)
         throw new AppError(400, "Can not find token", "Change Password Error");
-    //TODO: remove token
-    await token.delete();
-
-    // Business Logic Validation
-    //get current user info
 
     // Process
     //crypt and compare password
@@ -104,6 +100,34 @@ authController.changePassword = catchAsync(async (req, res, next) => {
         { user, accessToken },
         null,
         "Change Password Successful"
+    );
+});
+authController.resetPassword = catchAsync(async (req, res, next) => {
+    //Get data from request
+    let { email } = req.body;
+    const user = await User.findOne({ email, isDetele: false }, "+password");
+    if (!user)
+        throw new AppError(400, "User Not Found", "Reset Password Error");
+
+    let newPassword = generateRandomNumber().toString();
+    await sendEmail(user, { token: newPassword, type: "forgot-password" });
+
+    //crypt new password
+    const salt = await bcrypt.genSalt(10);
+    newPassword = await bcrypt.hash(newPassword, salt);
+
+    //update Password
+    user.password = newPassword;
+    await user.save();
+
+    //Response
+    return sendResponse(
+        res,
+        200,
+        true,
+        { user },
+        null,
+        "Please check your mailbox to get a new password"
     );
 });
 module.exports = authController;
