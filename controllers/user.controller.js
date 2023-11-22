@@ -71,7 +71,7 @@ userController.verifyAccount = catchAsync(async (req, res, next) => {
         type: "register",
     });
     if (!token)
-        throw new AppError(400, "Can not find Token", "Verify Account Error");
+        throw new AppError(400, "Invalid Token", "Verify Account Error");
 
     let user = await User.findByIdAndUpdate(
         userID,
