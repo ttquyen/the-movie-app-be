@@ -9,6 +9,7 @@ const userSchema = Schema(
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true, select: false },
         verified: { type: Boolean, default: false },
+        role: { type: String, required: true },
         isDeleted: { type: Boolean, default: false, select: false },
     },
     { timestamps: true }
@@ -22,9 +23,13 @@ userSchema.methods.toJSON = function () {
 };
 
 userSchema.methods.generateToken = async function () {
-    const accessToken = await jwt.sign({ _id: this._id }, JWT_SECRET_KEY, {
-        expiresIn: "1d",
-    });
+    const accessToken = await jwt.sign(
+        { _id: this._id, role: this.role },
+        JWT_SECRET_KEY,
+        {
+            expiresIn: "1d",
+        }
+    );
     return accessToken;
 };
 const User = mongoose.model("User", userSchema);

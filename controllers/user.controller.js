@@ -7,7 +7,7 @@ const crypto = require("crypto");
 const userController = {};
 
 userController.register = catchAsync(async (req, res, next) => {
-    let { name, email, password } = req.body;
+    let { name, email, password, role } = req.body;
 
     //check already exist
     let user = await User.findOne({ email });
@@ -18,7 +18,8 @@ userController.register = catchAsync(async (req, res, next) => {
     const salt = await bcrypt.genSalt(10);
     password = await bcrypt.hash(password, salt);
     //create user
-    user = await User.create({ name, email, password });
+    role = role === "ADMIN" ? "ADMIN" : "USER";
+    user = await User.create({ name, email, password, role });
 
     const accessToken = await user.generateToken();
 

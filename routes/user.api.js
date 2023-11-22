@@ -7,7 +7,7 @@ const authentication = require("../middlewares/authentication");
 /**
  * @route POST /users
  * @description Register a new user
- * @body {name, email, password}
+ * @body {name, email, password, role}
  * @access Public
  */
 router.post(

@@ -322,5 +322,54 @@ movieController.removeMovieFromFavoriteList = catchAsync(
         );
     }
 );
+movieController.createMovie = catchAsync(async (req, res, next) => {
+    //Get data from request
+    const movieData = req.body;
+    const movie = await Movie.create(movieData);
+    //Response
+    return sendResponse(
+        res,
+        200,
+        true,
+        movie,
+        null,
+        "Create a new film Successful"
+    );
+});
+movieController.updateSingleMovie = catchAsync(async (req, res, next) => {
+    //Get data from request
+    const { id: movieId } = req.params;
+    const { ...updatedData } = req.body;
+    const movie = await Movie.findByIdAndUpdate(movieId, updatedData, {
+        new: true,
+    });
+    if (!movie)
+        throw new AppError(400, "Movie Not Found", "Update Single Movie Error");
+    //Response
+    return sendResponse(
+        res,
+        200,
+        true,
+        movie,
+        null,
+        "Update a film Successful"
+    );
+});
+movieController.deleteSingleMovie = catchAsync(async (req, res, next) => {
+    //Get data from request
+    const { id: movieId } = req.params;
+    const movie = await Movie.findByIdAndUpdate(movieId, { isDeleted: true });
+    if (!movie)
+        throw new AppError(400, "Movie Not Found", "Delete Single Movie Error");
+    //Response
+    return sendResponse(
+        res,
+        200,
+        true,
+        movie,
+        null,
+        "Delete a film Successful"
+    );
+});
 
 module.exports = movieController;
