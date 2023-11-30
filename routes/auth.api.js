@@ -23,5 +23,37 @@ router.post(
     ]),
     authController.loginWithEmail
 );
+/**
+ * @route PUT /auth/changepassword
+ * @description Change password
+ * @body {currentPassword, newPassword, token}
+ * @access Login required
+ */
 
+router.put(
+    "/changepassword",
+    authentication.loginRequired,
+    validators.validate([
+        body("currentPassword", "Invalid Current Password").exists().notEmpty(),
+        body("newPassword", "Invalid New Password").exists().notEmpty(),
+    ]),
+    authController.changePassword
+);
+/**
+ * @route POST /auth/reset
+ * @description Forgot password
+ * @body {email}
+ * @access Public
+ */
+
+router.post(
+    "/reset",
+    validators.validate([
+        body("email", "Invalid Email")
+            .exists()
+            .isEmail()
+            .normalizeEmail({ gmail_remove_dots: false }),
+    ]),
+    authController.resetPassword
+);
 module.exports = router;

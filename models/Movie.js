@@ -4,9 +4,10 @@ const Schema = mongoose.Schema;
 const movieSchema = Schema(
     {
         title: { type: String, required: true },
-        original_title: { type: String, required: true },
         overview: { type: String, required: true },
+
         belongs_to_collection: { type: Array, required: false, default: null },
+        original_title: { type: String, required: false, default: "" },
 
         backdrop_path: { type: String, required: false, default: "" },
         poster_path: { type: String, required: false, default: "" },

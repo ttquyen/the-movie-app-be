@@ -7,7 +7,7 @@ const authentication = require("../middlewares/authentication");
 /**
  * @route POST /users
  * @description Register a new user
- * @body {name, email, password}
+ * @body {name, email, password, role}
  * @access Public
  */
 router.post(
@@ -44,5 +44,19 @@ router.put(
     validators.validate([body("name", "Invalid name").exists().isString()]),
     userController.updateProfile
 );
-
+/**
+ * @route GET /verify/:id/:token
+ * @description Verify a account with token
+ * @access Public
+ */
+router.get(
+    "/verify/:id/:token",
+    validators.validate([
+        param("id", "Invalid UserID")
+            .exists()
+            .isString()
+            .custom(validators.checkObjectId),
+    ]),
+    userController.verifyAccount
+);
 module.exports = router;
