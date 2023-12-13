@@ -1,6 +1,44 @@
 const hbs = require("nodemailer-express-handlebars");
 const nodemailer = require("nodemailer");
 const path = require("path");
+const Token = require("../models/Token");
+/*
+user:{email, name}
+token:{type, token}
+*/
+const generateTokenByType = async (userId, type) => {
+    let token = { userId };
+    switch (type) {
+        case "register":
+            token = {
+                ...token,
+                type,
+                token: crypto.randomBytes(32).toString("hex"),
+            };
+            break;
+
+        case "change-password":
+            token = {
+                ...token,
+                type,
+                token: generateRandomNumber().toString(),
+            };
+            break;
+
+        case "forgot-password":
+            token = {
+                ...token,
+                type,
+                token: generateRandomNumber().toString(),
+            };
+            break;
+
+        default:
+            break;
+    }
+    token = await new Token(token).save();
+    return token;
+};
 const sendEmail = async (user, token) => {
     try {
         const transporter = nodemailer.createTransport({
@@ -71,4 +109,4 @@ const sendEmail = async (user, token) => {
     }
 };
 
-module.exports = sendEmail;
+module.exports = { sendEmail, generateTokenByType };

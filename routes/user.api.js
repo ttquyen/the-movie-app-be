@@ -59,4 +59,20 @@ router.get(
     ]),
     userController.verifyAccount
 );
+/**
+ * @route POST /resend-email
+ * @description Resend email for verification
+ * @access Public
+ */
+router.get(
+    "/resend-email",
+    validators.validate([
+        body("email", "Invalid Email")
+            .exists()
+            .isEmail()
+            .normalizeEmail({ gmail_remove_dots: false }),
+        body("type", "Invalid Type").exists().notEmpty(),
+    ]),
+    userController.reSendEmail
+);
 module.exports = router;
