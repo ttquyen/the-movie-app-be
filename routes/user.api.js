@@ -64,7 +64,7 @@ router.get(
  * @description Resend email for verification
  * @access Public
  */
-router.get(
+router.post(
     "/resend-email",
     validators.validate([
         body("email", "Invalid Email")

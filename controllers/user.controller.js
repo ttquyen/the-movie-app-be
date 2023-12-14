@@ -2,7 +2,7 @@ const { AppError, catchAsync, sendResponse } = require("../helpers/utils");
 const User = require("../models/User");
 const Token = require("../models/Token");
 const bcrypt = require("bcryptjs");
-const sendEmail = require("../helpers/email");
+const { sendEmail, generateTokenByType } = require("../helpers/email");
 const crypto = require("crypto");
 const userController = {};
 
@@ -23,8 +23,7 @@ userController.register = catchAsync(async (req, res, next) => {
 
     const accessToken = await user.generateToken();
 
-    let token = sendEmail.generateTokenByType(user._id, "register");
-
+    let token = generateTokenByType(user._id, "register");
     await sendEmail(user, token);
 
     //Response
@@ -85,11 +84,11 @@ userController.verifyAccount = catchAsync(async (req, res, next) => {
     return sendResponse(res, 200, true, {}, null, "Email Verified Successful");
 });
 userController.reSendEmail = catchAsync(async (req, res, next) => {
-    let { email, type } = req.params;
+    let { email, type } = req.body;
     let user = await User.findOne({ email, isDeleted: false });
     if (!user)
         throw new AppError(400, "Can not find user", "Resend Email Error");
-    let token = sendEmail.generateTokenByType(user._id, type);
+    let token = await generateTokenByType(user._id, type);
     await sendEmail(user, token);
 
     //Response

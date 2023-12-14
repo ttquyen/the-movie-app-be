@@ -1,4 +1,4 @@
-const sendEmail = require("../helpers/email");
+const { sendEmail } = require("../helpers/email");
 const {
     AppError,
     catchAsync,
