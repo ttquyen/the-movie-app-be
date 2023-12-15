@@ -72,7 +72,7 @@ email.sendEmail = async (user, token) => {
             context: {
                 username: user.name,
                 company: "The Movie Application",
-                verifyLink: `${process.env.BASE_URL}/users/verify/${user._id}/${token.token}`,
+                verifyLink: `${process.env.FRONT_END_URL}/users/verify/${user._id}/${token.token}`,
             },
         };
         const changePasswordMailOptions = {
