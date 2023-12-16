@@ -6,16 +6,22 @@ const Rating = require("../models/Rating");
 const Favorite = require("../models/Favorite");
 const movieController = {};
 
-const returnFields =
-    "title overview backdrop_path poster_path imdb_id genre_ids vote_count vote_average popularity release_date";
-
+const returnFields = {
+    title: 1,
+    overview: 1,
+    backdrop_path: 1,
+    poster_path: 1,
+    imdb_id: 1,
+    genre_ids: 1,
+    vote_count: 1,
+    vote_average: 1,
+    popularity: 1,
+    release_date: 1,
+};
 movieController.getMovieListByType = catchAsync(async (req, res, next) => {
-    //Get data from request
-    //   const listType = req.body.listType;
-    let { page, limit, listType, ...filter } = { ...req.query };
-    page = parseInt(page) || 1;
-    limit = parseInt(limit) || 10;
+    let { page = 1, limit = 10, listType, ...filter } = { ...req.query };
     const filterConditions = [{ isDeleted: false }];
+    //Add filterConditions
     if (filter.title) {
         filterConditions.push({
             title: { $regex: filter.title, $options: "i" },
@@ -46,6 +52,7 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
     let filterCriteria = filterConditions.length
         ? { $and: filterConditions }
         : {};
+
     const count = await Movie.countDocuments(filterCriteria);
     const totalPages = Math.ceil(count / limit);
     const offset = limit * (page - 1);
@@ -53,6 +60,7 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
     const movies = await Movie.find(filterCriteria, returnFields)
         .skip(offset)
         .limit(limit);
+
     //Response
     return sendResponse(
         res,
@@ -63,109 +71,92 @@ movieController.getMovieListByType = catchAsync(async (req, res, next) => {
         "Get Movies By Type Successful"
     );
 });
-movieController.getRatedMovieListOfUser = catchAsync(async (req, res, next) => {
-    // Get data from request
-    const userId = req.userId;
-    let { page, limit, ...filter } = { ...req.query };
+//Use for query Rated and Favorite Movie List of User
+const getMoviesByCriteria = async (
+    userId,
+    filter,
+    page,
+    limit,
+    movieModel, // Rating or Favorite
+    additionalFields = []
+) => {
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
 
-    let ratedMovies = await Rating.find(
-        { author: userId, isDeleted: false },
-        "movieId star"
+    let moviesData;
+    //Get list of movieID related to current movieModel => Use them to find movie detail
+    moviesData = await movieModel.find(
+        { author: userId, ...filter },
+        additionalFields.join(" ")
     );
-    if (!ratedMovies) {
-        return sendResponse(
-            res,
-            200,
-            true,
-            { movies: [], totalPages: 0, count: 0 },
-            null,
-            "Get Rated Movies Successful"
-        );
+    if (!moviesData || moviesData.length === 0) {
+        return { movies: [], totalPages: 0, count: 0 };
     }
-    let movieIds = ratedMovies.map((i) => i.movieId);
+
+    const movieIds = moviesData.map((i) => i.movieId);
     const filterConditions = [{ isDeleted: false }, { _id: { $in: movieIds } }];
 
-    let filterCriteria = filterConditions.length
+    const filterCriteria = filterConditions.length
         ? { $and: filterConditions }
         : {};
+
     const count = await Movie.countDocuments(filterCriteria);
     const totalPages = Math.ceil(count / limit);
     const offset = limit * (page - 1);
+
     const movies = await Movie.find(filterCriteria, returnFields)
-        // .sort(sortFilter)
         .skip(offset)
         .limit(limit);
-    let retMovieList = [];
-    if (movies.length > 0) {
-        retMovieList = movies.map((m) => {
-            let user_rated = ratedMovies.find((movie) =>
-                movie.movieId.equals(m._id)
-            ).star;
-            return {
-                _id: m._id,
-                title: m.title,
-                overview: m.overview,
-                backdrop_path: m.backdrop_path,
-                poster_path: m.poster_path,
-                imdb_id: m.imdb_id,
-                genre_ids: m.genre_ids,
-                vote_count: m.vote_count,
-                vote_average: m.vote_average,
-                popularity: m.popularity,
-                release_date: m.release_date,
-                user_rated: user_rated,
-            };
+
+    //Map the user_rated_star to movie info (for Rating case)
+    if (movieModel === Rating) {
+        movies.forEach((movie) => {
+            const correspondingRating = moviesData.find((data) => {
+                return data.movieId.equals(movie._id);
+            });
+            const star = correspondingRating ? correspondingRating.star : null;
+            if (star) movie._doc = { ...movie._doc, star };
         });
     }
-    //Response
+    return { movies, totalPages, count };
+};
+movieController.getRatedMovieListOfUser = catchAsync(async (req, res, next) => {
+    const userId = req.userId;
+    const { page, limit, ...filter } = req.query;
+
+    const { movies, totalPages, count } = await getMoviesByCriteria(
+        userId,
+        filter,
+        page,
+        limit,
+        Rating,
+        ["movieId", "star"]
+    );
+
     return sendResponse(
         res,
         200,
         true,
-        { movies: retMovieList, totalPages, count },
+        { movies, totalPages, count },
         null,
-        "Get Favorite Movies Successful"
+        "Get Rated Movies Successful"
     );
 });
+
 movieController.getFavoriteMovieListOfUser = catchAsync(
     async (req, res, next) => {
-        // Get data from request
         const userId = req.userId;
-        let { page, limit, ...filter } = { ...req.query };
-        page = parseInt(page) || 1;
-        limit = parseInt(limit) || 10;
+        const { page, limit, ...filter } = req.query;
 
-        let favMovies = await Favorite.find({ author: userId }, "movieId");
-        if (!favMovies) {
-            return sendResponse(
-                res,
-                200,
-                true,
-                { movies: [], totalPages: 0, count: 0 },
-                null,
-                "Get Rated Movies Successful"
-            );
-        }
-        let movieIds = favMovies.map((i) => i.movieId);
-        const filterConditions = [
-            { isDeleted: false },
-            { _id: { $in: movieIds } },
-        ];
+        const { movies, totalPages, count } = await getMoviesByCriteria(
+            userId,
+            filter,
+            page,
+            limit,
+            Favorite,
+            ["movieId"]
+        );
 
-        let filterCriteria = filterConditions.length
-            ? { $and: filterConditions }
-            : {};
-        const count = await Movie.countDocuments(filterCriteria);
-        const totalPages = Math.ceil(count / limit);
-        const offset = limit * (page - 1);
-        const movies = await Movie.find(filterCriteria, returnFields)
-            .sort({ createdAt: -1 })
-            .skip(offset)
-            .limit(limit);
-
-        //Response
         return sendResponse(
             res,
             200,
@@ -176,48 +167,50 @@ movieController.getFavoriteMovieListOfUser = catchAsync(
         );
     }
 );
+
 movieController.getSingleMovie = catchAsync(async (req, res, next) => {
-    //Get data from request
     const { id: movieId } = req.params;
     const userId = req.query.userId;
 
     const movie = await Movie.findOne({ _id: movieId, isDeleted: false });
-    if (!movie)
-        throw new AppError(400, "Movie Not Found", "Get Single Movie Error");
-    const genre_ids = movie.genre_ids;
-    let genres = await Genre.find({ id: { $in: genre_ids } });
-    if (userId) {
-        let alreadyRated = await Rating.findOne({
-            movieId: movieId,
-            author: userId,
-        });
-        let user_rated = alreadyRated ? alreadyRated.star : null;
 
-        let alreadyAddedFavorite = await Favorite.findOne({
-            movieId: movieId,
-            author: userId,
-        });
-        let isFavorite = alreadyAddedFavorite ? true : false;
-        return sendResponse(
-            res,
-            200,
-            true,
-            { ...movie._doc, genres, user_rated, isFavorite },
-            null,
-            "Get Single Movie Successful"
-        );
+    if (!movie) {
+        throw new AppError(400, "Movie Not Found", "Get Single Movie Error");
     }
 
-    //Response
+    const genre_ids = movie.genre_ids;
+    const genres = await Genre.find({ id: { $in: genre_ids } });
+
+    let user_rated = null;
+    let isFavorite = false;
+
+    if (userId) {
+        const [alreadyRated, alreadyAddedFavorite] = await Promise.all([
+            Rating.findOne({ movieId, author: userId }),
+            Favorite.findOne({ movieId, author: userId }),
+        ]);
+
+        user_rated = alreadyRated ? alreadyRated.star : null;
+        isFavorite = !!alreadyAddedFavorite;
+    }
+
+    const responsePayload = {
+        ...movie.toObject(),
+        genres,
+        user_rated,
+        isFavorite,
+    };
+
     return sendResponse(
         res,
         200,
         true,
-        { ...movie._doc, genres },
+        responsePayload,
         null,
         "Get Single Movie Successful"
     );
 });
+
 movieController.getCommentsOfMovie = catchAsync(async (req, res, next) => {
     //Get data from request
     const movieId = req.params.id;
@@ -232,15 +225,14 @@ movieController.getCommentsOfMovie = catchAsync(async (req, res, next) => {
             "Get Comments of Movie Error"
         );
 
-    // Process
-    //get comments
+    //Count all comments of movie
     const count = await Comment.countDocuments({
         movie: movieId,
         isDeleted: false,
     });
     const totalPages = Math.ceil(count / limit);
     const offset = limit * (page - 1);
-
+    //Get comment with author
     const comments = await Comment.find({ movie: movieId, isDeleted: false })
         .sort({ createdAt: -1 })
         .skip(offset)
@@ -259,9 +251,7 @@ movieController.getCommentsOfMovie = catchAsync(async (req, res, next) => {
 });
 movieController.removeMovieFromFavoriteList = catchAsync(
     async (req, res, next) => {
-        //Get data from request
         const ratingId = req.params.id;
-        // const userId = req.userId;
         // Validate movie exist
         let rating = await Rating.findOneAndUpdate(
             { _id: ratingId, isDeleted: false },
