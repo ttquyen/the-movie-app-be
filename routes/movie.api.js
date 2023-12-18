@@ -24,7 +24,7 @@ router.get(
 );
 
 /**
- * @route GET /movies/favorite?page=1&limit=10
+ * @route GET /movies/favorites?page=1&limit=10
  * @description Get all FAVORITE movies of an user with pagination
  * @access Login required
  */
@@ -86,7 +86,7 @@ router.post(
  * @access Login required, ADMIN
  */
 router.put(
-    "/",
+    "/detail/:id",
     authentication.adminRequired,
     validators.validate([
         param("id", "Invalid movieId")
@@ -102,7 +102,7 @@ router.put(
  * @access Login required, ADMIN
  */
 router.delete(
-    "/",
+    "/detail/:id",
     authentication.adminRequired,
     validators.validate([
         param("id", "Invalid movieId")
