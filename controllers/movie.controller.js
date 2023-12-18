@@ -18,8 +18,18 @@ const returnFields = {
     popularity: 1,
     release_date: 1,
 };
+const handleFindOneMovie = async (condition, msg, errorType) => {
+    const movie = await Movie.findOne(condition);
+
+    if (!movie) {
+        throw new AppError(400, msg, errorType);
+    }
+    return movie;
+};
 movieController.getMovieListByType = catchAsync(async (req, res, next) => {
-    let { page = 1, limit = 10, listType, ...filter } = { ...req.query };
+    let { page, limit, listType, ...filter } = { ...req.query };
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 10;
     const filterConditions = [{ isDeleted: false }];
     //Add filterConditions
     if (filter.title) {
@@ -172,11 +182,11 @@ movieController.getSingleMovie = catchAsync(async (req, res, next) => {
     const { id: movieId } = req.params;
     const userId = req.query.userId;
 
-    const movie = await Movie.findOne({ _id: movieId, isDeleted: false });
-
-    if (!movie) {
-        throw new AppError(400, "Movie Not Found", "Get Single Movie Error");
-    }
+    const movie = await handleFindOneMovie(
+        { _id: movieId, isDeleted: false },
+        "Movie Not Found",
+        "Get Single Movie Error"
+    );
 
     const genre_ids = movie.genre_ids;
     const genres = await Genre.find({ id: { $in: genre_ids } });
@@ -217,13 +227,11 @@ movieController.getCommentsOfMovie = catchAsync(async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
     // Validate movie exist
-    let movie = await Movie.findOne({ _id: movieId, isDeleted: false });
-    if (!movie)
-        throw new AppError(
-            401,
-            "Movie not found",
-            "Get Comments of Movie Error"
-        );
+    await handleFindOneMovie(
+        { _id: movieId, isDeleted: false },
+        "Movie not found",
+        "Get Comments of Movie Error"
+    );
 
     //Count all comments of movie
     const count = await Comment.countDocuments({
