@@ -193,13 +193,14 @@ movieController.getSingleMovie = catchAsync(async (req, res, next) => {
 
     let user_rated = null;
     let isFavorite = false;
-
+    //Check if user's already voted or added this movie
+    //if user does not login, dont need to check
     if (userId) {
         const [alreadyRated, alreadyAddedFavorite] = await Promise.all([
             Rating.findOne({ movieId, author: userId }),
             Favorite.findOne({ movieId, author: userId }),
         ]);
-
+        //return data related to user
         user_rated = alreadyRated ? alreadyRated.star : null;
         isFavorite = !!alreadyAddedFavorite;
     }
